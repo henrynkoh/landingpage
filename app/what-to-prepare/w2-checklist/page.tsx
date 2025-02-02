@@ -3,8 +3,15 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
+interface UploadedFile {
+  name: string;
+  status: 'uploaded' | 'pending';
+  type: string;
+}
+
 export default function W2ChecklistPage() {
   const [completedItems, setCompletedItems] = useState<string[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
 
   const checklistCategories = [
     {
@@ -72,6 +79,18 @@ export default function W2ChecklistPage() {
     const completedCategoryItems = completedItems.filter(id => categoryItems.includes(id))
     return (completedCategoryItems.length / categoryItems.length) * 100
   }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, documentType: string) => {
+    const files = event.target.files;
+    if (files) {
+      const newFiles = Array.from(files).map(file => ({
+        name: file.name,
+        status: 'uploaded' as const,
+        type: documentType
+      }));
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
@@ -198,6 +217,132 @@ export default function W2ChecklistPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Document Upload Section */}
+          <div className="grid gap-8 md:grid-cols-2 mt-12">
+            {/* W-2 Forms Upload */}
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-2xl font-semibold mb-6">Required Documents</h2>
+              
+              <div className="mb-6">
+                <label className="block text-lg font-medium text-gray-700 mb-2">
+                  W-2 Forms from employers
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    multiple
+                    onChange={(e) => handleFileUpload(e, 'W-2 Forms')}
+                    className="block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-red-50 file:text-red-700
+                      hover:file:bg-red-100"
+                  />
+                </div>
+              </div>
+
+              {/* Last Paystubs Upload */}
+              <div className="mb-6">
+                <label className="block text-lg font-medium text-gray-700 mb-2">
+                  Last paystubs
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileUpload(e, 'Last Paystubs')}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-red-50 file:text-red-700
+                    hover:file:bg-red-100"
+                />
+              </div>
+
+              {/* Previous Tax Returns Upload */}
+              <div className="mb-6">
+                <label className="block text-lg font-medium text-gray-700 mb-2">
+                  Previous tax returns
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileUpload(e, 'Previous Tax Returns')}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-red-50 file:text-red-700
+                    hover:file:bg-red-100"
+                />
+              </div>
+
+              {/* Personal Identification Upload */}
+              <div className="mb-6">
+                <label className="block text-lg font-medium text-gray-700 mb-2">
+                  Personal identification
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileUpload(e, 'Personal Identification')}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-red-50 file:text-red-700
+                    hover:file:bg-red-100"
+                />
+              </div>
+
+              {/* Deduction Records Upload */}
+              <div className="mb-6">
+                <label className="block text-lg font-medium text-gray-700 mb-2">
+                  Deduction records
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={(e) => handleFileUpload(e, 'Deduction Records')}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-red-50 file:text-red-700
+                    hover:file:bg-red-100"
+                />
+              </div>
+            </div>
+
+            {/* Uploaded Files Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-2xl font-semibold mb-6">Uploaded Documents</h2>
+              {uploadedFiles.length === 0 ? (
+                <p className="text-gray-500">No documents uploaded yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-700">{file.type}</p>
+                        <p className="text-sm text-gray-500">{file.name}</p>
+                      </div>
+                      <span className="px-3 py-1 text-sm text-green-700 bg-green-100 rounded-full">
+                        Uploaded
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Action Buttons */}
