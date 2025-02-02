@@ -64,7 +64,7 @@ export default function W2ChecklistPage() {
     if (!category) return 0
     const categoryDocuments = category.documents
     const uploadedCategoryFiles = categoryDocuments.filter(doc => 
-      uploadedFiles.some(file => file.type === doc.name)
+      uploadedFiles.some(file => file.type === doc.id)
     )
     return (uploadedCategoryFiles.length / categoryDocuments.length) * 100
   }
@@ -75,7 +75,7 @@ export default function W2ChecklistPage() {
       const newFiles = Array.from(files).map(file => ({
         name: file.name,
         status: 'uploaded' as const,
-        type: documentName
+        type: documentId
       }));
       setUploadedFiles(prev => [...prev, ...newFiles]);
     }
@@ -202,7 +202,7 @@ export default function W2ChecklistPage() {
                             file:bg-red-50 file:text-red-700
                             hover:file:bg-red-100"
                         />
-                        {getUploadStatus(doc.name)}
+                        {getUploadStatus(doc.id)}
                       </div>
                     </div>
                   ))}
@@ -223,7 +223,11 @@ export default function W2ChecklistPage() {
                   {uploadedFiles.map((file, index) => (
                     <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-700">{file.type}</p>
+                        <p className="font-medium text-gray-700">
+                          {documentCategories.find(cat => 
+                            cat.documents.find(doc => doc.id === file.type)
+                          )?.documents.find(doc => doc.id === file.type)?.name || file.type}
+                        </p>
                         <p className="text-sm text-gray-500">{file.name}</p>
                       </div>
                       {getUploadStatus(file.type)}
