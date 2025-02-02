@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { uploadFile, UploadError } from '@/lib/uploadFile'
+import FileManager from '@/components/FileManager'
 
 interface UploadedFile {
   name: string;
@@ -278,46 +279,17 @@ export default function W2ChecklistPage() {
             ))}
           </div>
 
-          {/* Uploaded Files Section */}
-          <div className="grid gap-8 md:grid-cols-2 mt-12">
-            {/* Uploaded Files Section */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-semibold mb-6">Uploaded Documents</h2>
-              {uploadedFiles.length === 0 ? (
-                <p className="text-gray-500">No documents uploaded yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-700">
-                          {documentCategories.find(cat => 
-                            cat.documents.find(doc => doc.id === file.type)
-                          )?.documents.find(doc => doc.id === file.type)?.name || file.type}
-                        </p>
-                        <p className="text-sm text-gray-500">{file.name}</p>
-                        {file.error && (
-                          <p className="text-sm text-red-500 mt-1">{file.error}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {file.downloadUrl && (
-                          <a
-                            href={file.downloadUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-red-600 hover:text-red-700 text-sm"
-                          >
-                            View File
-                          </a>
-                        )}
-                        {getUploadStatus(file.type)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Replace the old Uploaded Files Section with FileManager */}
+          <div className="mt-12">
+            <FileManager
+              uploadedFiles={uploadedFiles}
+              onDeleteFile={(file) => {
+                setUploadedFiles(prev => prev.filter(f => 
+                  !(f.name === file.name && f.type === file.type)
+                ))
+              }}
+              documentCategories={documentCategories}
+            />
           </div>
 
           {/* Action Buttons */}
