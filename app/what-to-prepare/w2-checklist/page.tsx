@@ -2,15 +2,20 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { uploadFile, UploadError } from '@/lib/uploadFile'
 
 interface UploadedFile {
   name: string;
-  status: 'uploaded' | 'pending';
+  status: 'uploaded' | 'pending' | 'error';
   type: string;
+  downloadUrl?: string;
+  path?: string;
+  error?: string;
 }
 
 export default function W2ChecklistPage() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+  const [isUploading, setIsUploading] = useState(false)
 
   const documentCategories = [
     {
@@ -69,20 +74,82 @@ export default function W2ChecklistPage() {
     return (uploadedCategoryFiles.length / categoryDocuments.length) * 100
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, documentId: string, documentName: string) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, documentId: string, documentName: string) => {
     const files = event.target.files;
-    if (files) {
-      const newFiles = Array.from(files).map(file => ({
-        name: file.name,
-        status: 'uploaded' as const,
-        type: documentId
-      }));
-      setUploadedFiles(prev => [...prev, ...newFiles]);
+    if (!files) return;
+
+    setIsUploading(true);
+    
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        // Add a pending file entry
+        const pendingFile: UploadedFile = {
+          name: file.name,
+          status: 'pending',
+          type: documentId
+        };
+        setUploadedFiles(prev => [...prev, pendingFile]);
+
+        try {
+          // Upload to Firebase
+          const result = await uploadFile(file, documentId);
+          
+          // Update the file status with the download URL
+          return {
+            name: file.name,
+            status: 'uploaded' as const,
+            type: documentId,
+            downloadUrl: result.downloadUrl,
+            path: result.path
+          };
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          return {
+            name: file.name,
+            status: 'error' as const,
+            type: documentId,
+            error: error instanceof UploadError ? error.message : 'Failed to upload file'
+          };
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      
+      // Update the uploaded files list with the results
+      setUploadedFiles(prev => {
+        const filteredPrev = prev.filter(f => 
+          !results.some(r => r.name === f.name && r.type === f.type)
+        );
+        return [...filteredPrev, ...results];
+      });
+    } catch (error) {
+      console.error('Error handling file upload:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const getUploadStatus = (documentId: string) => {
-    const uploaded = uploadedFiles.some(file => file.type === documentId);
+    const uploaded = uploadedFiles.some(file => file.type === documentId && file.status === 'uploaded');
+    const pending = uploadedFiles.some(file => file.type === documentId && file.status === 'pending');
+    const error = uploadedFiles.some(file => file.type === documentId && file.status === 'error');
+
+    if (pending) {
+      return (
+        <span className="px-3 py-1 text-sm text-yellow-700 bg-yellow-100 rounded-full animate-pulse">
+          Uploading...
+        </span>
+      );
+    }
+    
+    if (error) {
+      return (
+        <span className="px-3 py-1 text-sm text-red-700 bg-red-100 rounded-full">
+          Upload Failed
+        </span>
+      );
+    }
+
     return uploaded ? (
       <span className="px-3 py-1 text-sm text-green-700 bg-green-100 rounded-full">
         Uploaded
@@ -229,8 +296,23 @@ export default function W2ChecklistPage() {
                           )?.documents.find(doc => doc.id === file.type)?.name || file.type}
                         </p>
                         <p className="text-sm text-gray-500">{file.name}</p>
+                        {file.error && (
+                          <p className="text-sm text-red-500 mt-1">{file.error}</p>
+                        )}
                       </div>
-                      {getUploadStatus(file.type)}
+                      <div className="flex items-center gap-2">
+                        {file.downloadUrl && (
+                          <a
+                            href={file.downloadUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-red-600 hover:text-red-700 text-sm"
+                          >
+                            View File
+                          </a>
+                        )}
+                        {getUploadStatus(file.type)}
+                      </div>
                     </div>
                   ))}
                 </div>

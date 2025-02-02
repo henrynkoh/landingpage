@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/{documentId}/{fileName} {
+      allow read: if true;
+      allow write: if
+        // File size is less than 10MB
+        request.resource.size < 10 * 1024 * 1024 &&
+        // Only allow specific file types
+        request.resource.contentType.matches('application/pdf|image/jpeg|image/png|image/jpg') &&
+        // Validate file path format
+        fileName.matches('^[0-9]+_.*\\.(pdf|jpe?g|png)$');
+    }
+  }
+} 
