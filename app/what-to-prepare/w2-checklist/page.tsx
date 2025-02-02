@@ -13,53 +13,49 @@ export default function W2ChecklistPage() {
   const [completedItems, setCompletedItems] = useState<string[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
 
-  const checklistCategories = [
+  const documentCategories = [
     {
       id: 'income',
       title: 'Income Documents',
-      description: 'Essential income-related documents required for your tax return',
-      items: [
-        { id: 'w2-forms', title: 'W-2 Forms', description: 'Forms from all employers during the tax year' },
-        { id: 'last-paystub', title: 'Last Paystub', description: 'Final paystub from each employer' },
-        { id: 'prev-return', title: 'Previous Year\'s Tax Return', description: 'For reference and comparison' },
-        { id: '1099-int', title: '1099-INT Forms', description: 'Interest income statements from banks' },
-        { id: '1099-div', title: '1099-DIV Forms', description: 'Dividend income statements' }
+      documents: [
+        { id: 'w2-forms', name: 'W-2 Forms', description: 'Forms from all employers during the tax year' },
+        { id: 'last-paystub', name: 'Last Paystub', description: 'Final paystub from each employer' },
+        { id: 'prev-return', name: 'Previous Year\'s Tax Return', description: 'For reference and comparison' },
+        { id: '1099-int', name: '1099-INT Forms', description: 'Interest income statements from banks' },
+        { id: '1099-div', name: '1099-DIV Forms', description: 'Dividend income statements' }
       ]
     },
     {
       id: 'deductions',
       title: 'Deduction Documents',
-      description: 'Documents needed for claiming various deductions',
-      items: [
-        { id: 'mortgage', title: 'Mortgage Interest Statement (Form 1098)', description: 'From your mortgage lender' },
-        { id: 'property-tax', title: 'Property Tax Statements', description: 'Annual property tax payments' },
-        { id: 'charity', title: 'Charitable Donation Receipts', description: 'Records of all charitable contributions' },
-        { id: 'education', title: 'Education Expenses (Form 1098-T)', description: 'Tuition and education-related expenses' },
-        { id: 'medical', title: 'Medical Expense Records', description: 'Records of substantial medical expenses' }
+      documents: [
+        { id: 'mortgage', name: 'Mortgage Interest Statement (Form 1098)', description: 'From your mortgage lender' },
+        { id: 'property-tax', name: 'Property Tax Statements', description: 'Annual property tax payments' },
+        { id: 'charity', name: 'Charitable Donation Receipts', description: 'Records of all charitable contributions' },
+        { id: 'education', name: 'Education Expenses (Form 1098-T)', description: 'Tuition and education-related expenses' },
+        { id: 'medical', name: 'Medical Expense Records', description: 'Records of substantial medical expenses' }
       ]
     },
     {
       id: 'personal',
       title: 'Personal Information',
-      description: 'Personal and dependent information for accurate filing',
-      items: [
-        { id: 'ssn', title: 'Social Security Cards', description: 'For you, spouse, and dependents' },
-        { id: 'id', title: 'Government-issued ID', description: 'Driver\'s license or state ID' },
-        { id: 'bank-info', title: 'Bank Account Information', description: 'For direct deposit of refund' },
-        { id: 'address', title: 'Current Address Proof', description: 'If changed during the tax year' },
-        { id: 'dependent-info', title: 'Dependent Information', description: 'Birth certificates and SSNs of dependents' }
+      documents: [
+        { id: 'ssn', name: 'Social Security Cards', description: 'For you, spouse, and dependents' },
+        { id: 'id', name: 'Government-issued ID', description: 'Driver\'s license or state ID' },
+        { id: 'bank-info', name: 'Bank Account Information', description: 'For direct deposit of refund' },
+        { id: 'address', name: 'Current Address Proof', description: 'If changed during the tax year' },
+        { id: 'dependent-info', name: 'Dependent Information', description: 'Birth certificates and SSNs of dependents' }
       ]
     },
     {
       id: 'special',
       title: 'Special Situations',
-      description: 'Additional documents for specific situations',
-      items: [
-        { id: 'hsa', title: 'HSA Contributions (Form 5498-SA)', description: 'Health Savings Account information' },
-        { id: 'ira', title: 'IRA Contributions', description: 'Traditional and Roth IRA contribution records' },
-        { id: '401k', title: '401(k) Contributions', description: 'Annual 401(k) contribution statements' },
-        { id: 'student-loans', title: 'Student Loan Interest', description: 'Form 1098-E for student loan interest' },
-        { id: 'moving', title: 'Moving Expense Records', description: 'If moved for work (military only)' }
+      documents: [
+        { id: 'hsa', name: 'HSA Contributions (Form 5498-SA)', description: 'Health Savings Account information' },
+        { id: 'ira', name: 'IRA Contributions', description: 'Traditional and Roth IRA contribution records' },
+        { id: '401k', name: '401(k) Contributions', description: '401(k) contribution statements' },
+        { id: 'student-loans', name: 'Student Loan Interest', description: 'Form 1098-E for student loan interest' },
+        { id: 'moving', name: 'Moving Expense Records', description: 'If moved for work (military only)' }
       ]
     }
   ]
@@ -73,23 +69,36 @@ export default function W2ChecklistPage() {
   }
 
   const getCategoryProgress = (categoryId: string) => {
-    const category = checklistCategories.find(cat => cat.id === categoryId)
+    const category = documentCategories.find(cat => cat.id === categoryId)
     if (!category) return 0
-    const categoryItems = category.items.map(item => item.id)
+    const categoryItems = category.documents.map(item => item.id)
     const completedCategoryItems = completedItems.filter(id => categoryItems.includes(id))
     return (completedCategoryItems.length / categoryItems.length) * 100
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, documentType: string) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, documentId: string, documentName: string) => {
     const files = event.target.files;
     if (files) {
       const newFiles = Array.from(files).map(file => ({
         name: file.name,
         status: 'uploaded' as const,
-        type: documentType
+        type: documentName
       }));
       setUploadedFiles(prev => [...prev, ...newFiles]);
     }
+  };
+
+  const getUploadStatus = (documentId: string) => {
+    const uploaded = uploadedFiles.some(file => file.type === documentId);
+    return uploaded ? (
+      <span className="px-3 py-1 text-sm text-green-700 bg-green-100 rounded-full">
+        Uploaded
+      </span>
+    ) : (
+      <span className="px-3 py-1 text-sm text-gray-500 bg-gray-100 rounded-full">
+        Not Uploaded
+      </span>
+    );
   };
 
   return (
@@ -155,7 +164,7 @@ export default function W2ChecklistPage() {
 
           {/* Progress Overview */}
           <div className="grid md:grid-cols-4 gap-4 mb-12">
-            {checklistCategories.map(category => (
+            {documentCategories.map(category => (
               <div key={category.id} className="bg-white rounded-xl p-4 shadow-md border border-gray-200/50">
                 <h3 className="font-semibold text-gray-700 mb-2">{category.title}</h3>
                 <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -173,44 +182,34 @@ export default function W2ChecklistPage() {
 
           {/* Checklist Categories */}
           <div className="space-y-8">
-            {checklistCategories.map(category => (
+            {documentCategories.map(category => (
               <div key={category.id} className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200/50">
                 <h2 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">
                   {category.title}
                 </h2>
-                <p className="text-gray-600 mb-6">{category.description}</p>
-                
-                <div className="space-y-4">
-                  {category.items.map(item => (
-                    <div
-                      key={item.id}
-                      className={`p-4 rounded-xl border transition-all duration-300 transform hover:scale-[1.01] ${
-                        completedItems.includes(item.id)
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-red-300'
-                      }`}
-                    >
-                      <div className="flex items-start">
-                        <div 
-                          className="flex-shrink-0 cursor-pointer"
-                          onClick={() => toggleItem(item.id)}
-                        >
-                          <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors duration-300 ${
-                            completedItems.includes(item.id)
-                              ? 'bg-green-500 border-green-500'
-                              : 'border-gray-300 hover:border-red-500'
-                          }`}>
-                            {completedItems.includes(item.id) && (
-                              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                        <div className="ml-4 flex-grow">
-                          <h3 className="text-lg font-semibold text-gray-800">{item.title}</h3>
-                          <p className="text-gray-600">{item.description}</p>
-                        </div>
+                <div className="divide-y divide-gray-200">
+                  {category.documents.map(doc => (
+                    <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{doc.name}</p>
+                        <p className="text-sm text-gray-500">{doc.description}</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="file"
+                          id={doc.id}
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          multiple
+                          onChange={(e) => handleFileUpload(e, doc.id, doc.name)}
+                          className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-red-50 file:text-red-700
+                            hover:file:bg-red-100"
+                        />
+                        {getUploadStatus(doc.name)}
                       </div>
                     </div>
                   ))}
@@ -219,109 +218,8 @@ export default function W2ChecklistPage() {
             ))}
           </div>
 
-          {/* Document Upload Section */}
+          {/* Uploaded Files Section */}
           <div className="grid gap-8 md:grid-cols-2 mt-12">
-            {/* W-2 Forms Upload */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-semibold mb-6">Required Documents</h2>
-              
-              <div className="mb-6">
-                <label className="block text-lg font-medium text-gray-700 mb-2">
-                  W-2 Forms from employers
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    multiple
-                    onChange={(e) => handleFileUpload(e, 'W-2 Forms')}
-                    className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-red-50 file:text-red-700
-                      hover:file:bg-red-100"
-                  />
-                </div>
-              </div>
-
-              {/* Last Paystubs Upload */}
-              <div className="mb-6">
-                <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Last paystubs
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  multiple
-                  onChange={(e) => handleFileUpload(e, 'Last Paystubs')}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-red-50 file:text-red-700
-                    hover:file:bg-red-100"
-                />
-              </div>
-
-              {/* Previous Tax Returns Upload */}
-              <div className="mb-6">
-                <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Previous tax returns
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  multiple
-                  onChange={(e) => handleFileUpload(e, 'Previous Tax Returns')}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-red-50 file:text-red-700
-                    hover:file:bg-red-100"
-                />
-              </div>
-
-              {/* Personal Identification Upload */}
-              <div className="mb-6">
-                <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Personal identification
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  multiple
-                  onChange={(e) => handleFileUpload(e, 'Personal Identification')}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-red-50 file:text-red-700
-                    hover:file:bg-red-100"
-                />
-              </div>
-
-              {/* Deduction Records Upload */}
-              <div className="mb-6">
-                <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Deduction records
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  multiple
-                  onChange={(e) => handleFileUpload(e, 'Deduction Records')}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-red-50 file:text-red-700
-                    hover:file:bg-red-100"
-                />
-              </div>
-            </div>
-
             {/* Uploaded Files Section */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-semibold mb-6">Uploaded Documents</h2>
@@ -335,9 +233,7 @@ export default function W2ChecklistPage() {
                         <p className="font-medium text-gray-700">{file.type}</p>
                         <p className="text-sm text-gray-500">{file.name}</p>
                       </div>
-                      <span className="px-3 py-1 text-sm text-green-700 bg-green-100 rounded-full">
-                        Uploaded
-                      </span>
+                      {getUploadStatus(file.type)}
                     </div>
                   ))}
                 </div>
