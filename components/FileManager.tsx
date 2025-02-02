@@ -73,9 +73,29 @@ export default function FileManager({ uploadedFiles, onDeleteFile, documentCateg
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
+    <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-red-100">
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4">Document Manager</h2>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Document Manager</h2>
+            <p className="text-gray-600">View, search, and manage your uploaded documents</p>
+          </div>
+          <div className="text-sm text-gray-500 text-right">
+            <p>{uploadedFiles.length} documents uploaded</p>
+          </div>
+        </div>
+
+        {/* Quick Guide */}
+        <div className="bg-red-50 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-red-700 mb-2">Quick Guide</h3>
+          <ul className="text-sm text-red-600 space-y-1">
+            <li>• Use the search bar to find specific documents</li>
+            <li>• Filter by category to view related documents</li>
+            <li>• Sort by date or name to organize your view</li>
+            <li>• Click "View" to open uploaded documents</li>
+            <li>• Use "Delete" to remove unwanted files</li>
+          </ul>
+        </div>
         
         {/* Search and Filters */}
         <div className="grid gap-4 md:grid-cols-3 mb-6">

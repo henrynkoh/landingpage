@@ -203,6 +203,12 @@ export default function W2ChecklistPage() {
             </h1>
           </div>
           <div className="flex items-center gap-4">
+            <a
+              href="#document-manager"
+              className="text-red-600 hover:text-red-700 font-semibold transition-colors duration-300"
+            >
+              View Uploaded Files
+            </a>
             <Link href="/what-to-prepare" className="text-red-600 hover:text-red-700 font-semibold transition-colors duration-300">
               ← Back to Documents
             </Link>
@@ -279,8 +285,8 @@ export default function W2ChecklistPage() {
             ))}
           </div>
 
-          {/* Replace the old Uploaded Files Section with FileManager */}
-          <div className="mt-12">
+          {/* Document Manager Section with ID for navigation */}
+          <div id="document-manager" className="mt-12 scroll-mt-24">
             <FileManager
               uploadedFiles={uploadedFiles}
               onDeleteFile={(file) => {
