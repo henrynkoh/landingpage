@@ -10,7 +10,6 @@ interface UploadedFile {
 }
 
 export default function W2ChecklistPage() {
-  const [completedItems, setCompletedItems] = useState<string[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
 
   const documentCategories = [
@@ -60,20 +59,14 @@ export default function W2ChecklistPage() {
     }
   ]
 
-  const toggleItem = (itemId: string) => {
-    setCompletedItems(prev => 
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
-    )
-  }
-
   const getCategoryProgress = (categoryId: string) => {
     const category = documentCategories.find(cat => cat.id === categoryId)
     if (!category) return 0
-    const categoryItems = category.documents.map(item => item.id)
-    const completedCategoryItems = completedItems.filter(id => categoryItems.includes(id))
-    return (completedCategoryItems.length / categoryItems.length) * 100
+    const categoryDocuments = category.documents
+    const uploadedCategoryFiles = categoryDocuments.filter(doc => 
+      uploadedFiles.some(file => file.type === doc.name)
+    )
+    return (uploadedCategoryFiles.length / categoryDocuments.length) * 100
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, documentId: string, documentName: string) => {
@@ -174,7 +167,7 @@ export default function W2ChecklistPage() {
                   ></div>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  {Math.round(getCategoryProgress(category.id))}% Complete
+                  {`${Math.round(getCategoryProgress(category.id))}% Complete`}
                 </p>
               </div>
             ))}
@@ -243,12 +236,6 @@ export default function W2ChecklistPage() {
 
           {/* Action Buttons */}
           <div className="mt-12 flex justify-center gap-6">
-            <button
-              onClick={() => setCompletedItems([])}
-              className="px-8 py-4 bg-white text-red-600 rounded-xl text-lg font-semibold hover:bg-red-50 border border-red-200 transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              Reset Checklist
-            </button>
             <Link
               href="/schedule-consultation"
               className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl text-lg font-semibold hover:from-red-500 hover:to-red-600 transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl"
